@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayurveda Smart Scan & Telemedicine</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styled.css">
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script type="module" src="apped.js"></script>
+</head>
+<body class="bg-pattern">
+    <div id="app" v-cloak>
+        
+        <div v-if="incomingCall" class="call-toast animated-pop">
+            <div class="toast-content">
+                <span class="pulse-dot">🔴</span>
+                <div>
+                    <h4>Incoming Call...</h4>
+                    <p><strong>{{ incomingCall.callerName }}</strong> is calling.</p>
+                </div>
+            </div>
+            <div class="toast-actions">
+                <button @click="acceptCall" class="btn btn-gold btn-sm">✅ Answer Video</button>
+                <button @click="rejectCall" class="btn btn-outline btn-sm" style="border-color: #ddd; color: #555;">❌ Decline</button>
+            </div>
+        </div>
+
+        <header>
+            <div class="logo-container" @click="currentPage = 'landing'">
+                <img src="logo.png" alt="Ayurveda Logo" class="brand-logo">
+                <h2 class="brand-text">Ayur<span>Veda</span>.AI</h2>
+            </div>
+            
+            <button v-if="!isLoggedIn" @click="showAuthModal = true" class="btn btn-primary-gold">
+                Login / Signup
+            </button>
+            
+            <div v-else class="user-profile-header">
+                <div class="user-info">
+                    <div class="user-avatar-small" :class="user.role === 'doctor' ? 'avatar-doc' : ''">
+                        <span>{{ user.role === 'doctor' ? '👨‍⚕️' : '👤' }}</span>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ user.name }}</span>
+                        <span class="user-role-badge">{{ user.role }}</span>
+                    </div>
+                </div>
+                <button @click="logout" class="btn-logout" title="Logout">⏻</button>
+            </div>
+        </header>
+
+        <main style="display: flex; flex: 1; overflow: hidden;">
+            
+            <div v-if="currentPage === 'landing'" class="landing-wrapper animated-fade">
+                
+                <section class="hero-section">
+                    <div class="hero-card">
+                        <div class="hero-image-col">
+                            <div class="hero-img-wrapper">
+                                <img src="meditation-illustration.png" alt="Meditation" class="hero-img">
+                            </div>
+                        </div>
+                        <div class="hero-text-col">
+                            <h1>Discover balance.<br>Connect with Healers.</h1>
+                            <p class="hero-subtitle">Experience our Smart 3D Organ Scanning & Real-time Ayurvedic Telemedicine Platform.</p>
+                            <div class="hero-buttons">
+                                <button @click="handleStartClick" class="btn btn-gold">
+                                    {{ isLoggedIn ? 'Enter Dashboard' : 'Get Started Now' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="about-section">
+                    <h2 class="section-title">Why Choose AyurVeda.AI?</h2>
+                    <p class="section-subtitle">Bridging Ancient Holistic Wisdom with Modern Artificial Intelligence</p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🌿</div>
+                            <h3>Smart AI Diagnosis</h3>
+                            <p>Leverage our state-of-the-art Hugging Face models to analyze your Akriti, Doshas, and vital signs in real-time.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🫀</div>
+                            <h3>3D Bio-Scanner</h3>
+                            <p>Visually explore the impact of Pitta, Vata, and Kapha on vital human organs through our interactive 3D anatomy models.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📹</div>
+                            <h3>Live Telemedicine</h3>
+                            <p>Connect with expert Ayurveda Acharyas globally through secure, P2P video consultations with smart prescription sync.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="site-footer">
+                    <div class="footer-content">
+                        <div class="footer-col" style="flex: 1.5; min-width: 250px;">
+                            <h4>AyurVeda.AI</h4>
+                            <p>Holistic health and natural balance powered by artificial intelligence and verified Ayurvedic practitioners.</p>
+                        </div>
+                        <div class="footer-col" style="flex: 1; min-width: 200px;">
+                            <h4>Contact Us</h4>
+                            <p>📧 support@ayurveda.ai</p>
+                            <p>📞 +91 800-AYUR-HEAL</p>
+                            <p>🏢 108 Prana Avenue, Wellness IT Park, India</p>
+                        </div>
+                        <div class="footer-col" style="flex: 1; min-width: 150px;">
+                            <h4>Legal</h4>
+                            <p><a href="#">Privacy Policy</a></p>
+                            <p><a href="#">Terms of Service</a></p>
+                            <p><a href="#">Practitioner Guidelines</a></p>
+                        </div>
+                    </div>
+                    <div class="footer-bottom">
+                        <p>&copy; 2026 AyurVeda.AI. All rights reserved.</p>
+                    </div>
+                </footer>
+            </div>
+
+            <section v-show="currentPage === 'dashboard'" class="dashboard-section animated-fade" style="width: 100%;">
+                
+                <aside class="sidebar-card">
+                    <ul class="menu-list">
+                        <template v-if="user && user.role === 'patient'">
+                            <li class="menu-category">TELEMEDICINE</li>
+                            <li :class="{ active: currentTab === 'find-doc' }" @click="switchTab('find-doc')">🩺 Find Doctor</li>
+                            <li :class="{ active: currentTab === 'records' }" @click="switchTab('records')">📂 Prescriptions</li>
+                            
+                            <li class="menu-category">AI TOOLS</li>
+                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/BOT_AYUR')">💬 Wellness Bot ↗</li>
+                            <li :class="{ active: currentTab === 'diagnosis' }" @click="switchTab('diagnosis')">🔍 Diagnosis Tools</li>
+                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/medical-media-analyzer')">📷 Image Diagnosis ↗</li>
+                            <li :class="{ active: currentTab === 'model' }" @click="switchTab('model')">🫀 3D Bio-Scanner</li>
+                        </template>
+
+                        <template v-if="user && user.role === 'doctor'">
+                            <li class="menu-category">CLINIC</li>
+                            <li :class="{ active: currentTab === 'consultation' }" @click="switchTab('consultation')">📹 Live Dashboard</li>
+                            <li :class="{ active: currentTab === 'doc-records' }" @click="switchTab('doc-records')">📚 Patient Records</li>
+                            
+                            <li class="menu-category">TOOLS</li>
+                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/BOT_AYUR')">💬 AI Reference ↗</li>
+                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/medical-media-analyzer')">📷 Image Analyzer ↗</li>
+                        </template>
+                    </ul>
+                </aside>
+
+                <div class="content-area">
+                    
+                    <div v-if="currentTab === 'find-doc'" class="card-container">
+                        <h3>Available Specialists</h3>
+                        <div class="doctor-grid">
+                            <div v-for="doc in availableDoctors" :key="doc.email" class="doctor-card">
+                                <div class="doc-avatar">👨‍⚕️</div>
+                                <div class="doc-info">
+                                    <h4>{{ doc.name }}</h4>
+                                    <p class="specialty">Ayurveda Acharya</p>
+                                    <div class="status-dot online">Online</div>
+                                </div>
+                                <button @click="startCall(doc)" class="btn btn-gold btn-sm">
+                                    📹 Video Consult
+                                </button>
+                            </div>
+                            <div v-if="availableDoctors.length === 0" class="empty-state">
+                                <p>No doctors found.</p>
+                                <small>Tip: Open a NEW TAB and register a 'Doctor' account.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="currentTab === 'diagnosis'" class="card-container">
+                        <h3>Ayurvedic Diagnosis Tools</h3>
+                        <p style="color: #666; margin-bottom: 20px;">Select an AI-powered tool for specialized health analysis.</p>
+                        <div class="doctor-grid">
+                            <div class="doctor-card diagnosis-card">
+                                <div class="doc-avatar" style="background: #ffebee; color: #e53935; border-color: #ffcdd2;">🌡️</div>
+                                <div class="doc-info">
+                                    <h4>Rakta Chapa & Ushnata Pariksha</h4>
+                                    <p class="specialty">BP & Temperature Scanner</p>
+                                </div>
+                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/COMBINED_SCANNING_APPLICATIONS')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
+                                    Open Tool ↗
+                                </button>
+                            </div>
+
+                            <div class="doctor-card diagnosis-card">
+                                <div class="doc-avatar" style="background: #e8f5e9; color: #43a047; border-color: #c8e6c9;">🩸</div>
+                                <div class="doc-info">
+                                    <h4>Madhumeha Pariksha</h4>
+                                    <p class="specialty">Glucose Monitor</p>
+                                </div>
+                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/GLUCOSE_CHECKING')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
+                                    Open Tool ↗
+                                </button>
+                            </div>
+
+                            <div class="doctor-card diagnosis-card">
+                                <div class="doc-avatar" style="background: #fff3e0; color: #fb8c00; border-color: #ffe0b2;">🧍</div>
+                                <div class="doc-info">
+                                    <h4>Akriti Pariksha AI</h4>
+                                    <p class="specialty">Body Constitution Scan</p>
+                                </div>
+                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/Akriti-Pariksha-AI')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
+                                    Open Tool ↗
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-show="currentTab === 'model'" class="model-container-card">
+                        <div class="model-header"><h3>Bio-Scanner</h3></div>
+                        <div class="canvas-wrapper" id="three-canvas-container"></div>
+                        <div class="model-controls">
+                            <button @click="simulateDosha('pitta')" class="btn-dosha">🔥 Scan Pitta</button>
+                            <button @click="simulateDosha('reset')" class="btn-dosha">⚪ Reset</button>
+                        </div>
+                    </div>
+
+                    <div v-show="currentTab === 'consultation-room'" class="consultation-layout">
+                        <div class="video-panel">
+                            <div class="video-wrapper">
+                                <video id="remote-video" autoplay playsinline class="vid-remote"></video>
+                                <video id="local-video" autoplay playsinline muted class="vid-local"></video>
+                                
+                                <div class="waiting-msg" v-if="callStatus === 'waiting'">
+                                    <div class="spinner"></div>
+                                    <p>Connecting securely...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="call-controls">
+                                <button @click="endCall" class="btn btn-red">🔴 End Call</button>
+                            </div>
+                        </div>
+
+                        <div class="prescription-panel">
+                            <div class="pad-header">
+                                <h3>🌿 Ayurveda Rx</h3>
+                                <p v-if="activeCall" style="font-size: 0.8rem; color: #666;">
+                                    Patient: {{ activeCall.patientName }} <br>
+                                    Dr: {{ activeCall.doctorName }}
+                                </p>
+                            </div>
+
+                            <div v-if="user && user.role === 'doctor'" class="smart-editor-wrapper">
+                                <textarea v-model="prescriptionDraft" @input="handlePrescriptionInput" placeholder="Type prescription..." class="rx-textarea"></textarea>
+                                <div v-if="showSuggestions" class="suggestions-popover">
+                                    <div v-for="item in herbSuggestions" @click="applySuggestion(item)" class="suggestion-item">
+                                        <strong>{{ item.name }}</strong> - {{ item.benefit }}
+                                    </div>
+                                </div>
+                                <button @click="savePrescription" class="btn btn-gold btn-full">💾 Save Record</button>
+                            </div>
+
+                            <div v-else class="smart-editor-wrapper waiting-rx">
+                                <p style="color:#888;">Live Prescription View:</p>
+                                <div class="rx-preview">
+                                    <p style="white-space: pre-wrap;">{{ lastReceivedRx || 'Waiting for doctor...' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="currentTab === 'consultation'" class="card-container centered-content">
+                        <h3>Live Clinic</h3>
+                        <p>You are online as <strong>{{ user ? user.name : '' }}</strong>.</p>
+                        <div class="status-indicator">🟢 Ready for Calls</div>
+                        <p style="margin-top:20px; color:#666; font-size:0.9rem;">
+                            Keep this tab open. Calls will appear automatically.
+                        </p>
+                        <div class="local-preview-mini">
+                            <video id="preview-video" autoplay playsinline muted></video>
+                            <p>Camera Check</p>
+                        </div>
+                    </div>
+
+                    <div v-if="currentTab === 'records' || currentTab === 'doc-records'" class="card-container">
+                        <h3>History</h3>
+                        <div v-for="rec in myRecords" :key="rec.id" class="record-item">
+                            <div class="rec-top">
+                                <span>{{ new Date(rec.date).toLocaleDateString() }}</span>
+                                <span>Dr. {{ rec.doctorName }}</span>
+                            </div>
+                            <div class="rec-patient">Patient: {{ rec.patientName }}</div>
+                            <hr>
+                            <p class="rec-text">{{ rec.prescription }}</p>
+                        </div>
+                        <div v-if="myRecords.length === 0" class="empty-state">No records found.</div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <div v-if="showAuthModal" class="modal-overlay">
+            <div class="modal-card animated-pop">
+                <h2>{{ authMode === 'signup' ? 'Create Account' : 'Welcome Back' }}</h2>
+                
+                <button @click="handleGoogleLogin" class="btn-google">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <div class="auth-divider"><span>OR</span></div>
+
+                <form @submit.prevent="handleAuthSubmit">
+                    <div class="input-group" v-if="authMode === 'signup'">
+                        <label>Full Name</label> 
+                        <input type="text" v-model="authForm.name" placeholder="John Doe" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email Address</label> 
+                        <input type="email" v-model="authForm.email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label> 
+                        <input type="password" v-model="authForm.password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="role-selector" v-if="authMode === 'signup'">
+                        <div :class="['role-opt', authForm.role === 'patient' ? 'selected' : '']" @click="authForm.role = 'patient'">👤 Patient</div>
+                        <div :class="['role-opt', authForm.role === 'doctor' ? 'selected' : '']" @click="authForm.role = 'doctor'">👨‍⚕️ Doctor</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-gold btn-full">
+                        {{ authMode === 'signup' ? 'Sign Up' : 'Log In' }}
+                    </button>
+                </form>
+                
+                <p class="auth-switch">
+                    {{ authMode === 'signup' ? 'Already have an account?' : "Don't have an account?" }} 
+                    <a href="#" @click.prevent="toggleAuthMode">{{ authMode === 'signup' ? 'Log in' : 'Sign up' }}</a>
+                </p>
+                <p style="text-align: right; margin-top: 10px;">
+                    <a href="#" style="color:#aaa; font-size: 0.8rem; text-decoration: none;" @click="showAuthModal = false">Cancel</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
