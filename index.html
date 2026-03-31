@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayurveda Smart Scan & Telemedicine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chatyurveda.AI Smart Scan & Telemedicine</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styled.css">
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -14,12 +14,13 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
     <script type="module" src="apped.js"></script>
 </head>
 <body class="bg-pattern">
     <div id="app" v-cloak>
         
+        <div v-if="isMobileMenuOpen" class="mobile-overlay animated-fade" @click="isMobileMenuOpen = false"></div>
+
         <div v-if="incomingCall" class="call-toast animated-pop">
             <div class="toast-content">
                 <span class="pulse-dot">🔴</span>
@@ -29,27 +30,35 @@
                 </div>
             </div>
             <div class="toast-actions">
-                <button @click="acceptCall" class="btn btn-gold btn-sm">✅ Answer Video</button>
-                <button @click="rejectCall" class="btn btn-outline btn-sm" style="border-color: #ddd; color: #555;">❌ Decline</button>
+                <button @click="acceptCall" class="btn btn-gold btn-sm">✅ Answer</button>
+                <button @click="rejectCall" class="btn btn-outline btn-sm">❌ Decline</button>
             </div>
         </div>
 
         <header>
-            <div class="logo-container" @click="currentPage = 'landing'">
-                <img src="logo.png" alt="Ayurveda Logo" class="brand-logo">
-                <h2 class="brand-text">Ayur<span>Veda</span>.AI</h2>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button v-if="isLoggedIn && currentPage === 'dashboard'" class="mobile-menu-btn" @click="isMobileMenuOpen = !isMobileMenuOpen">
+                    ☰
+                </button>
+                <div class="logo-container" @click="currentPage = 'landing'">
+                    <img src="logo.png" alt="Ayurveda Logo" class="brand-logo" onerror="this.src='data:image/png;base64,iVBORw0KGgo='">
+                    <div class="logo-text-wrapper">
+                        <h2 class="brand-text">Chatyurveda<span>.AI</span></h2>
+                        <p class="brand-motto">healthy life through nature</p>
+                    </div>
+                </div>
             </div>
             
             <button v-if="!isLoggedIn" @click="showAuthModal = true" class="btn btn-primary-gold">
-                Login / Signup
+                Login <span class="hide-mobile">/ Signup</span>
             </button>
             
             <div v-else class="user-profile-header">
                 <div class="user-info">
-                    <div class="user-avatar-small" :class="user.role === 'doctor' ? 'avatar-doc' : ''">
-                        <span>{{ user.role === 'doctor' ? '👨‍⚕️' : '👤' }}</span>
+                    <div class="user-avatar-small" :class="user.role === 'doctor' ? 'avatar-doc' : (user.role === 'ehr' ? 'avatar-ehr' : '')">
+                        <span>{{ user.role === 'doctor' ? '👨‍⚕️' : (user.role === 'ehr' ? '📁' : '👤') }}</span>
                     </div>
-                    <div class="user-details">
+                    <div class="user-details hide-mobile">
                         <span class="user-name">{{ user.name }}</span>
                         <span class="user-role-badge">{{ user.role }}</span>
                     </div>
@@ -58,20 +67,19 @@
             </div>
         </header>
 
-        <main style="display: flex; flex: 1; overflow: hidden;">
+        <main style="display: flex; flex: 1; overflow: hidden; position: relative;">
             
             <div v-if="currentPage === 'landing'" class="landing-wrapper animated-fade">
-                
                 <section class="hero-section">
                     <div class="hero-card">
                         <div class="hero-image-col">
                             <div class="hero-img-wrapper">
-                                <img src="meditation-illustration.png" alt="Meditation" class="hero-img">
+                                <img src="meditation-illustration.png" alt="Meditation" class="hero-img" onerror="this.src='data:image/png;base64,iVBORw0KGgo='">
                             </div>
                         </div>
                         <div class="hero-text-col">
                             <h1>Discover balance.<br>Connect with Healers.</h1>
-                            <p class="hero-subtitle">Experience our Smart 3D Organ Scanning & Real-time Ayurvedic Telemedicine Platform.</p>
+                            <p class="hero-subtitle">Experience our Smart 3D Organ Scanning, AI Records, & Real-time Ayurvedic Telemedicine Platform.</p>
                             <div class="hero-buttons">
                                 <button @click="handleStartClick" class="btn btn-gold">
                                     {{ isLoggedIn ? 'Enter Dashboard' : 'Get Started Now' }}
@@ -82,100 +90,112 @@
                 </section>
 
                 <section class="about-section">
-                    <h2 class="section-title">Why Choose AyurVeda.AI?</h2>
+                    <h2 class="section-title">Why Choose Chatyurveda.AI?</h2>
                     <p class="section-subtitle">Bridging Ancient Holistic Wisdom with Modern Artificial Intelligence</p>
-                    
                     <div class="features-grid">
                         <div class="feature-card">
-                            <div class="feature-icon">🌿</div>
+                            <div class="feature-icon"><img src="smartai.jpg" alt="Smart AI Diagnosis" onerror="this.src='data:image/png;base64,iVBORw0KGgo='"></div>
                             <h3>Smart AI Diagnosis</h3>
-                            <p>Leverage our state-of-the-art Hugging Face models to analyze your Akriti, Doshas, and vital signs in real-time.</p>
+                            <p>Leverage our state-of-the-art Hugging Face models to analyze your Akriti, Doshas, and vital signs.</p>
                         </div>
                         <div class="feature-card">
-                            <div class="feature-icon">🫀</div>
+                            <div class="feature-icon"><img src="3d anatomy.jpg" alt="3D Bio-Scanner" onerror="this.src='data:image/png;base64,iVBORw0KGgo='"></div>
                             <h3>3D Bio-Scanner</h3>
-                            <p>Visually explore the impact of Pitta, Vata, and Kapha on vital human organs through our interactive 3D anatomy models.</p>
+                            <p>Visually explore the impact of Pitta, Vata, and Kapha on vital human organs through interactive 3D models.</p>
                         </div>
                         <div class="feature-card">
-                            <div class="feature-icon">📹</div>
+                            <div class="feature-icon"><img src="live telemedicine.jpg" alt="Live Telemedicine" onerror="this.src='data:image/png;base64,iVBORw0KGgo='"></div>
                             <h3>Live Telemedicine</h3>
-                            <p>Connect with expert Ayurveda Acharyas globally through secure, P2P video consultations with smart prescription sync.</p>
+                            <p>Connect with expert Ayurveda Acharyas globally through secure, P2P video consultations.</p>
                         </div>
                     </div>
                 </section>
 
                 <footer class="site-footer">
                     <div class="footer-content">
-                        <div class="footer-col" style="flex: 1.5; min-width: 250px;">
-                            <h4>AyurVeda.AI</h4>
-                            <p>Holistic health and natural balance powered by artificial intelligence and verified Ayurvedic practitioners.</p>
-                        </div>
-                        <div class="footer-col" style="flex: 1; min-width: 200px;">
-                            <h4>Contact Us</h4>
-                            <p>📧 support@ayurveda.ai</p>
-                            <p>📞 +91 800-AYUR-HEAL</p>
-                            <p>🏢 108 Prana Avenue, Wellness IT Park, India</p>
-                        </div>
-                        <div class="footer-col" style="flex: 1; min-width: 150px;">
-                            <h4>Legal</h4>
-                            <p><a href="#">Privacy Policy</a></p>
-                            <p><a href="#">Terms of Service</a></p>
-                            <p><a href="#">Practitioner Guidelines</a></p>
-                        </div>
+                        <div class="footer-col" style="flex: 1.5; min-width: 250px;"><h4>Chatyurveda.AI</h4><p>Holistic health and natural balance.</p></div>
+                        <div class="footer-col" style="flex: 1; min-width: 200px;"><h4>Contact Us</h4><p>📧 support@chatyurveda.ai</p></div>
                     </div>
-                    <div class="footer-bottom">
-                        <p>&copy; 2026 AyurVeda.AI. All rights reserved.</p>
-                    </div>
+                    <div class="footer-bottom"><p>&copy; 2026 Chatyurveda.AI. All rights reserved.</p></div>
                 </footer>
             </div>
 
             <section v-show="currentPage === 'dashboard'" class="dashboard-section animated-fade" style="width: 100%;">
                 
-                <aside class="sidebar-card">
+                <aside class="sidebar-card" :class="{ 'mobile-open': isMobileMenuOpen }">
+                    <div class="mobile-menu-header">
+                        <h3>Menu</h3>
+                        <button @click="isMobileMenuOpen = false" class="btn-close-menu">✕</button>
+                    </div>
                     <ul class="menu-list">
                         <template v-if="user && user.role === 'patient'">
-                            <li class="menu-category">TELEMEDICINE</li>
-                            <li :class="{ active: currentTab === 'find-doc' }" @click="switchTab('find-doc')">🩺 Find Doctor</li>
+                            <li class="menu-category">MY HEALTH</li>
+                            <li :class="{ active: currentTab === 'patient-profile' }" @click="switchTab('patient-profile', user)">👤 My Dashboard</li>
+                            <li :class="{ active: currentTab === 'appointments' }" @click="switchTab('appointments')">📅 Appointments</li>
                             <li :class="{ active: currentTab === 'records' }" @click="switchTab('records')">📂 Prescriptions</li>
                             
-                            <li class="menu-category">AI TOOLS</li>
-                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/BOT_AYUR')">💬 Wellness Bot ↗</li>
-                            <li :class="{ active: currentTab === 'diagnosis' }" @click="switchTab('diagnosis')">🔍 Diagnosis Tools</li>
-                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/medical-media-analyzer')">📷 Image Diagnosis ↗</li>
+                            <li class="menu-category">TELEMEDICINE</li>
+                            <li :class="{ active: currentTab === 'find-doc' }" @click="switchTab('find-doc')">🩺 Find Doctor</li>
                             <li :class="{ active: currentTab === 'model' }" @click="switchTab('model')">🫀 3D Bio-Scanner</li>
+                            
+                            <li class="menu-category">AI TOOLS</li>
+                            <li :class="{ active: currentTab === 'iframe-view' && iframeTitle === 'Wellness Bot' }" @click="openExternal('https://hjji7899-bot-ayur.hf.space', 'Wellness Bot')">💬 Wellness Bot</li>
+                            <li :class="{ active: currentTab === 'diagnosis' }" @click="switchTab('diagnosis')">🔍 Diagnosis Tools</li>
+                            <li :class="{ active: currentTab === 'iframe-view' && iframeTitle === 'Image Diagnosis' }" @click="openExternal('https://hjji7899-medical-media-analyzer.hf.space', 'Image Diagnosis')">📷 Image Diagnosis</li>
                         </template>
 
                         <template v-if="user && user.role === 'doctor'">
                             <li class="menu-category">CLINIC</li>
                             <li :class="{ active: currentTab === 'consultation' }" @click="switchTab('consultation')">📹 Live Dashboard</li>
-                            <li :class="{ active: currentTab === 'doc-records' }" @click="switchTab('doc-records')">📚 Patient Records</li>
+                            <li :class="{ active: currentTab === 'appointments' }" @click="switchTab('appointments')">📅 Appointments</li>
+                            <li :class="{ active: currentTab === 'doc-records' }" @click="switchTab('doc-records')">📚 My Prescriptions</li>
                             
                             <li class="menu-category">TOOLS</li>
-                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/BOT_AYUR')">💬 AI Reference ↗</li>
-                            <li @click="openExternal('https://huggingface.co/spaces/hjji7899/medical-media-analyzer')">📷 Image Analyzer ↗</li>
+                            <li :class="{ active: currentTab === 'ehr-db' }" @click="switchTab('ehr-db')">👥 Patient Database</li>
+                            <li :class="{ active: currentTab === 'model' }" @click="switchTab('model')">🫀 3D Bio-Scanner</li>
+                            <li :class="{ active: currentTab === 'iframe-view' && iframeTitle === 'AI Reference' }" @click="openExternal('https://hjji7899-bot-ayur.hf.space', 'AI Reference')">💬 AI Reference</li>
+                            <li :class="{ active: currentTab === 'iframe-view' && iframeTitle === 'Image Analyzer' }" @click="openExternal('https://hjji7899-medical-media-analyzer.hf.space', 'Image Analyzer')">📷 Image Analyzer</li>
+                        </template>
+
+                        <template v-if="user && user.role === 'ehr'">
+                            <li class="menu-category">SYSTEM</li>
+                            <li :class="{ active: currentTab === 'ehr-db' }" @click="switchTab('ehr-db')">🗄️ Master Database</li>
+                            <li :class="{ active: currentTab === 'appointments' }" @click="switchTab('appointments')">📅 All Appointments</li>
                         </template>
                     </ul>
                 </aside>
 
                 <div class="content-area">
                     
+                    <div v-if="currentTab === 'appointments'" class="card-container">
+                        <div class="flex-header-mobile">
+                            <h3>{{ user.role === 'ehr' ? 'System Appointments' : 'My Appointments' }}</h3>
+                            <button v-if="user.role === 'patient'" @click="openBookingModal" class="btn btn-gold btn-sm">➕ Book</button>
+                        </div>
+                        
+                        <div class="appointment-grid">
+                            <div class="appointment-card" v-for="app in myAppointments" :key="app.id">
+                                <h4 v-if="user.role !== 'doctor'">Dr. {{ app.doctorName }}</h4>
+                                <h4 v-if="user.role === 'doctor' || user.role === 'ehr'">Patient: {{ app.patientName }}</h4>
+                                <p><strong>Date:</strong> {{ app.date }} at {{ app.time }}</p>
+                                <p><strong>Reason:</strong> {{ app.reason }}</p>
+                                <span class="appointment-status">{{ app.status }}</span>
+                            </div>
+                        </div>
+                        <div v-if="myAppointments.length === 0" class="empty-state">No appointments scheduled.</div>
+                    </div>
+
                     <div v-if="currentTab === 'find-doc'" class="card-container">
                         <h3>Available Specialists</h3>
                         <div class="doctor-grid">
-                            <div v-for="doc in availableDoctors" :key="doc.email" class="doctor-card">
+                            <div v-for="(doc, index) in availableDoctors" :key="doc.email" class="doctor-card" :class="'doc-theme-' + (index % 5)">
                                 <div class="doc-avatar">👨‍⚕️</div>
                                 <div class="doc-info">
                                     <h4>{{ doc.name }}</h4>
                                     <p class="specialty">Ayurveda Acharya</p>
                                     <div class="status-dot online">Online</div>
                                 </div>
-                                <button @click="startCall(doc)" class="btn btn-gold btn-sm">
-                                    📹 Video Consult
-                                </button>
-                            </div>
-                            <div v-if="availableDoctors.length === 0" class="empty-state">
-                                <p>No doctors found.</p>
-                                <small>Tip: Open a NEW TAB and register a 'Doctor' account.</small>
+                                <button @click="startCall(doc)" class="btn btn-gold btn-sm">📹 Video Consult</button>
                             </div>
                         </div>
                     </div>
@@ -184,47 +204,178 @@
                         <h3>Ayurvedic Diagnosis Tools</h3>
                         <p style="color: #666; margin-bottom: 20px;">Select an AI-powered tool for specialized health analysis.</p>
                         <div class="doctor-grid">
-                            <div class="doctor-card diagnosis-card">
-                                <div class="doc-avatar" style="background: #ffebee; color: #e53935; border-color: #ffcdd2;">🌡️</div>
-                                <div class="doc-info">
-                                    <h4>Rakta Chapa & Ushnata Pariksha</h4>
-                                    <p class="specialty">BP & Temperature Scanner</p>
-                                </div>
-                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/COMBINED_SCANNING_APPLICATIONS')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
-                                    Open Tool ↗
-                                </button>
-                            </div>
+                            <div class="doctor-card diagnosis-card"><div class="doc-avatar" style="background: #ffebee; color: #e53935; border-color: #ffcdd2;">🌡️</div><div class="doc-info"><h4>Rakta Chapa & Ushnata</h4><p class="specialty">BP & Temp Scanner</p></div><button @click="openExternal('https://hjji7899-combined-scanning-applications.hf.space', 'Rakta Chapa & Ushnata Pariksha')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">Open Tool</button></div>
+                            <div class="doctor-card diagnosis-card"><div class="doc-avatar" style="background: #e8f5e9; color: #43a047; border-color: #c8e6c9;">🩸</div><div class="doc-info"><h4>Madhumeha Pariksha</h4><p class="specialty">Glucose Monitor</p></div><button @click="openExternal('https://hjji7899-glucose-checking.hf.space', 'Madhumeha Pariksha')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">Open Tool</button></div>
+                            <div class="doctor-card diagnosis-card"><div class="doc-avatar" style="background: #fff3e0; color: #fb8c00; border-color: #ffe0b2;">🧍</div><div class="doc-info"><h4>Akriti Pariksha AI</h4><p class="specialty">Constitution Scan</p></div><button @click="openExternal('https://hjji7899-akriti-pariksha-ai.hf.space', 'Akriti Pariksha AI')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">Open Tool</button></div>
+                        </div>
+                    </div>
 
-                            <div class="doctor-card diagnosis-card">
-                                <div class="doc-avatar" style="background: #e8f5e9; color: #43a047; border-color: #c8e6c9;">🩸</div>
-                                <div class="doc-info">
-                                    <h4>Madhumeha Pariksha</h4>
-                                    <p class="specialty">Glucose Monitor</p>
-                                </div>
-                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/GLUCOSE_CHECKING')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
-                                    Open Tool ↗
-                                </button>
-                            </div>
+                    <div v-if="currentTab === 'iframe-view'" class="chat-container-card">
+                        <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+                            <h3 style="margin: 0; color: var(--primary-green); font-size: 1.1rem;">{{ iframeTitle }}</h3>
+                            <button @click="user.role === 'patient' ? switchTab('diagnosis') : switchTab('consultation')" class="btn btn-outline btn-sm">🔙 Close</button>
+                        </div>
+                        <div class="iframe-container" style="background: #fff; flex: 1; display: flex;">
+                            <iframe :src="iframeUrl" width="100%" height="100%" frameborder="0" allow="camera; microphone; fullscreen; display-capture; autoplay"></iframe>
+                        </div>
+                    </div>
 
-                            <div class="doctor-card diagnosis-card">
-                                <div class="doc-avatar" style="background: #fff3e0; color: #fb8c00; border-color: #ffe0b2;">🧍</div>
-                                <div class="doc-info">
-                                    <h4>Akriti Pariksha AI</h4>
-                                    <p class="specialty">Body Constitution Scan</p>
+                    <div v-if="currentTab === 'ehr-db'" class="card-container">
+                        <h3>Platform Database</h3>
+                        <div class="db-section">
+                            <h4>Registered Patients</h4>
+                            <div class="doctor-grid">
+                                <div v-for="pat in allPatients" :key="pat.email" class="doctor-card" style="min-height: auto;">
+                                    <h4>{{ pat.name }}</h4>
+                                    <p style="font-size: 0.8rem; color: #888; word-break: break-all;">{{ pat.email }}</p>
+                                    <button @click="openPatientProfile(pat)" class="btn btn-primary-gold btn-sm" style="margin-top: 10px; width: 100%;">
+                                        Open Dashboard
+                                    </button>
                                 </div>
-                                <button @click="openExternal('https://huggingface.co/spaces/hjji7899/Akriti-Pariksha-AI')" class="btn btn-gold btn-sm btn-full" style="margin-top: auto;">
-                                    Open Tool ↗
-                                </button>
+                            </div>
+                        </div>
+                        <div class="db-section" style="margin-top: 40px;" v-if="user.role === 'ehr'">
+                            <h4>Registered Doctors</h4>
+                            <div class="doctor-grid">
+                                <div v-for="doc in allDoctors" :key="doc.email" class="doctor-card" style="min-height: auto;">
+                                    <h4>{{ doc.name }}</h4>
+                                    <p style="font-size: 0.8rem; color: #888; word-break: break-all;">{{ doc.email }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    <div v-if="currentTab === 'patient-profile' && viewingProfileUser" class="card-container">
+                        <div class="flex-header-mobile" style="margin-bottom: 20px;">
+                            <h3>Patient Dashboard</h3>
+                            <button v-if="user.role === 'doctor' || user.role === 'ehr'" @click="switchTab('ehr-db')" class="btn btn-outline btn-sm">🔙 Back</button>
+                        </div>
+                        
+                        <div class="profile-grid">
+                            <div class="profile-card">
+                                <h4>Demographics</h4>
+                                <div class="input-group">
+                                    <label>Age</label>
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="text" v-model="viewingProfileData.age" :disabled="user.role === 'patient'">
+                                        <button v-if="user.role === 'ehr'" @click="savePatientAge" class="btn btn-gold btn-sm">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-card">
+                                <h4>Latest Consultation</h4>
+                                <div v-if="latestConsultation" style="margin-top: 10px;">
+                                    <p><strong>Doctor:</strong> {{ latestConsultation.doctorName }}</p>
+                                    <p style="margin-top: 5px;"><strong>Date:</strong> {{ new Date(latestConsultation.date).toLocaleDateString() }}</p>
+                                </div>
+                                <p v-else style="margin-top: 10px; color: #888; font-size: 0.9rem;">No past consultations found.</p>
+                            </div>
+
+                            <div class="profile-card vitals-card">
+                                <h4>Latest Parsed Vitals</h4>
+                                <div class="vital-stats">
+                                    <div class="vital-box"><span>BP</span><strong>{{ viewingProfileData.vitals.bp }}</strong></div>
+                                    <div class="vital-box"><span>Temp</span><strong>{{ viewingProfileData.vitals.temp }}°</strong></div>
+                                    <div class="vital-box"><span>HR</span><strong>{{ viewingProfileData.vitals.hr }}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="documents-section" style="margin-top: 30px;">
+                            <h4>Prescriptions History</h4>
+                            <div class="record-item" v-for="rec in viewingProfileRecords" :key="rec.id">
+                                <div class="rec-top">
+                                    <span>🩺 {{ rec.doctorName }}</span>
+                                    <span>{{ new Date(rec.date).toLocaleDateString() }}</span>
+                                </div>
+                                <p class="rec-text" style="color: var(--dark-green); margin-top: 10px; white-space: pre-wrap;">{{ rec.prescription }}</p>
+                            </div>
+                            <div v-if="viewingProfileRecords.length === 0" class="empty-state">No prescriptions issued yet.</div>
+                        </div>
+
+                        <div class="documents-section" style="margin-top: 30px;">
+                            <h4>Medical Records & AI Diagnosis</h4>
+                            
+                            <div v-if="user.role === 'ehr'" class="upload-box" style="margin-bottom: 20px; padding: 20px; border: 2px dashed #ccc; border-radius: 15px; text-align: center;">
+                                <p style="margin-bottom: 10px;"><strong>Upload Metabolic Document (PDF/Image)</strong></p>
+                                <input type="file" @change="handleDocumentUpload" accept=".pdf,.png,.jpg" :disabled="isParsingDoc" style="max-width:100%;">
+                                <div v-if="isParsingDoc" style="margin-top: 10px; color: var(--primary-green);">
+                                    <div class="spinner" style="width:20px; height:20px; border-width:3px; display:inline-block; vertical-align:middle;"></div> 
+                                    Parsing calculations...
+                                </div>
+                            </div>
+
+                            <div class="record-item" v-for="doc in viewingProfileData.documents" :key="doc.id">
+                                <div class="rec-top"><span>📄 {{ doc.name }}</span> <span>{{ doc.date }}</span></div>
+                                <p class="rec-text" style="color: #43a047;">✓ {{ doc.parsedSummary }}</p>
+                                
+                                <div v-if="doc.inferred && doc.inferred.length > 0" class="inferred-box" style="background: #fdfaf6;">
+                                    <p style="font-size: 0.9rem; font-weight:bold; margin-bottom:10px; color: #5a7a57;">Calculated Biomarkers:</p>
+                                    <div v-for="inf in doc.inferred" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #e2d9c8;">
+                                        <span class="inferred-chip" style="background: #3D523A; font-size: 0.8rem;">⚕️ {{ inf.condition }}</span>
+                                        <p class="inferred-desc" style="line-height: 1.5; margin-top: 8px;">{{ inf.detail }}</p>
+                                    </div>
+                                    <button @click="triggerDiagnosisHighlight(doc.targets)" class="btn btn-sm btn-outline" style="margin-top: 10px; border-color: #f5b041; color: #e65100; font-weight: 600; width: 100%;">
+                                        🫀 Highlight Associated Organs
+                                    </button>
+                                </div>
+                            </div>
+                            <div v-if="viewingProfileData.documents.length === 0" class="empty-state">No medical records uploaded yet.</div>
+                        </div>
+                    </div>
+
                     <div v-show="currentTab === 'model'" class="model-container-card">
-                        <div class="model-header"><h3>Bio-Scanner</h3></div>
+                        <div class="model-header">
+                            <h3>Bio-Scanner</h3>
+                            <p v-if="viewingProfileUser && viewingProfileUser.name" style="color:#ddd; font-size: 0.85rem;">Data for: {{ viewingProfileUser.name }}</p>
+                        </div>
+                        
+                        <div class="vitals-overlay-container" v-if="viewingProfileData">
+                            <div class="floating-vital vital-head" v-if="viewingProfileData.vitals && viewingProfileData.vitals.temp && viewingProfileData.vitals.temp !== '--'">
+                                🌡️ {{ viewingProfileData.vitals.temp }}°F
+                            </div>
+                            <div class="floating-vital vital-heart" v-if="viewingProfileData.vitals && viewingProfileData.vitals.bp && viewingProfileData.vitals.bp !== '--/--'">
+                                🫀 BP: {{ viewingProfileData.vitals.bp }} <br> 💓 {{ viewingProfileData.vitals.hr }} bpm
+                                <div v-if="viewingProfileData.advancedVitals" class="hide-mobile" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 0.8rem; color: #555;">
+                                    <strong>Est. Lipids Panel</strong><br>
+                                    LDL: {{ viewingProfileData.advancedVitals.ldl }}<br>
+                                    HDL: {{ viewingProfileData.advancedVitals.hdl }}<br>
+                                    TG: {{ viewingProfileData.advancedVitals.tg }}
+                                </div>
+                            </div>
+                            <div class="floating-vital vital-pancreas" v-if="viewingProfileData.advancedVitals">
+                                ⚙️ <strong class="hide-mobile">Pancreas Stats</strong><br>
+                                <span style="font-size: 0.75rem; color: #555;">
+                                    eAG: {{ viewingProfileData.advancedVitals.eAG }}<br>
+                                    HOMA-IR: {{ viewingProfileData.advancedVitals.homaIR }}
+                                </span>
+                            </div>
+                            <div class="floating-vital vital-kidneys" v-if="viewingProfileData.advancedVitals">
+                                🫘 <strong class="hide-mobile">Renal Output</strong><br>
+                                <span style="font-size: 0.75rem; color: #555;">
+                                    Glu: {{ viewingProfileData.advancedVitals.urineGlucose }}<br>
+                                    Ket: {{ viewingProfileData.advancedVitals.urineKetones }}
+                                </span>
+                            </div>
+                        </div>
                         <div class="canvas-wrapper" id="three-canvas-container"></div>
                         <div class="model-controls">
                             <button @click="simulateDosha('pitta')" class="btn-dosha">🔥 Scan Pitta</button>
-                            <button @click="simulateDosha('reset')" class="btn-dosha">⚪ Reset</button>
+                            <button @click="simulateDosha('reset')" class="btn-dosha">⚪ Reset Scan</button>
+                        </div>
+                    </div>
+
+                    <div v-if="currentTab === 'consultation'" class="card-container centered-content">
+                        <h3>Live Clinic</h3>
+                        <p>You are online as <strong>{{ user ? user.name : '' }}</strong>.</p>
+                        <div class="status-indicator" style="margin-top:10px; padding: 5px 15px; background:#e8f5e9; color:#2e7d32; border-radius:20px;">🟢 Ready for Calls</div>
+                        <p style="margin-top:20px; color:#666; font-size:0.9rem; text-align: center;">
+                            Keep this tab open.<br>Calls will appear automatically.
+                        </p>
+                        <div class="local-preview-mini">
+                            <video id="preview-video" autoplay playsinline muted></video>
+                            <p style="position:absolute; bottom:5px; left:0; right:0; text-align:center; color:white; background:rgba(0,0,0,0.5); font-size: 0.8rem; margin:0;">Camera Check</p>
                         </div>
                     </div>
 
@@ -233,82 +384,92 @@
                             <div class="video-wrapper">
                                 <video id="remote-video" autoplay playsinline class="vid-remote"></video>
                                 <video id="local-video" autoplay playsinline muted class="vid-local"></video>
-                                
                                 <div class="waiting-msg" v-if="callStatus === 'waiting'">
                                     <div class="spinner"></div>
                                     <p>Connecting securely...</p>
                                 </div>
                             </div>
-                            
                             <div class="call-controls">
-                                <button @click="endCall" class="btn btn-red">🔴 End Call</button>
+                                <button @click="toggleAudio" class="btn" :class="audioEnabled ? 'btn-toggle' : 'btn-red'">
+                                    {{ audioEnabled ? '🎤 Mute' : '🔇 Unmute' }}
+                                </button>
+                                <button @click="toggleVideo" class="btn hide-mobile" :class="videoEnabled ? 'btn-toggle' : 'btn-red'">
+                                    {{ videoEnabled ? '📷 Video Off' : '🚫 Video On' }}
+                                </button>
+                                <button @click="endCall" class="btn btn-red">🔴 End</button>
                             </div>
                         </div>
-
                         <div class="prescription-panel">
-                            <div class="pad-header">
+                            <div class="pad-header" style="margin-bottom: 15px;">
                                 <h3>🌿 Ayurveda Rx</h3>
                                 <p v-if="activeCall" style="font-size: 0.8rem; color: #666;">
-                                    Patient: {{ activeCall.patientName }} <br>
-                                    Dr: {{ activeCall.doctorName }}
+                                    Patient: {{ activeCall.patientName }} <br> Dr: {{ activeCall.doctorName }}
                                 </p>
                             </div>
-
                             <div v-if="user && user.role === 'doctor'" class="smart-editor-wrapper">
-                                <textarea v-model="prescriptionDraft" @input="handlePrescriptionInput" placeholder="Type prescription..." class="rx-textarea"></textarea>
+                                <textarea v-model="prescriptionDraft" @input="handlePrescriptionInput" placeholder="Type prescription here..." class="rx-textarea"></textarea>
                                 <div v-if="showSuggestions" class="suggestions-popover">
                                     <div v-for="item in herbSuggestions" @click="applySuggestion(item)" class="suggestion-item">
-                                        <strong>{{ item.name }}</strong> - {{ item.benefit }}
+                                        <strong>{{ item.name }}</strong> - <span style="font-size: 0.85rem; color: #666;">{{ item.benefit }}</span>
                                     </div>
                                 </div>
                                 <button @click="savePrescription" class="btn btn-gold btn-full">💾 Save Record</button>
                             </div>
-
                             <div v-else class="smart-editor-wrapper waiting-rx">
                                 <p style="color:#888;">Live Prescription View:</p>
-                                <div class="rx-preview">
-                                    <p style="white-space: pre-wrap;">{{ lastReceivedRx || 'Waiting for doctor...' }}</p>
-                                </div>
+                                <div class="rx-preview" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px; height: 100%; border: 1px dashed #ccc;"><p style="white-space: pre-wrap;">{{ lastReceivedRx || 'Waiting for doctor...' }}</p></div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div v-if="currentTab === 'consultation'" class="card-container centered-content">
-                        <h3>Live Clinic</h3>
-                        <p>You are online as <strong>{{ user ? user.name : '' }}</strong>.</p>
-                        <div class="status-indicator">🟢 Ready for Calls</div>
-                        <p style="margin-top:20px; color:#666; font-size:0.9rem;">
-                            Keep this tab open. Calls will appear automatically.
-                        </p>
-                        <div class="local-preview-mini">
-                            <video id="preview-video" autoplay playsinline muted></video>
-                            <p>Camera Check</p>
                         </div>
                     </div>
 
                     <div v-if="currentTab === 'records' || currentTab === 'doc-records'" class="card-container">
                         <h3>History</h3>
                         <div v-for="rec in myRecords" :key="rec.id" class="record-item">
-                            <div class="rec-top">
-                                <span>{{ new Date(rec.date).toLocaleDateString() }}</span>
-                                <span>Dr. {{ rec.doctorName }}</span>
-                            </div>
-                            <div class="rec-patient">Patient: {{ rec.patientName }}</div>
-                            <hr>
-                            <p class="rec-text">{{ rec.prescription }}</p>
+                            <div class="rec-top"><span>{{ new Date(rec.date).toLocaleDateString() }}</span><span>Dr. {{ rec.doctorName }}</span></div>
+                            <div class="rec-patient">Patient: {{ rec.patientName }}</div><hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;"><p class="rec-text">{{ rec.prescription }}</p>
                         </div>
                         <div v-if="myRecords.length === 0" class="empty-state">No records found.</div>
                     </div>
-
                 </div>
             </section>
         </main>
+
+        <div v-if="showBookModal" class="modal-overlay">
+            <div class="modal-card animated-pop">
+                <h2>Schedule Appointment</h2>
+                <form @submit.prevent="bookAppointment">
+                    <div class="input-group">
+                        <label>Select Doctor</label>
+                        <select v-model="bookForm.docEmail" required>
+                            <option value="" disabled>Choose a Specialist...</option>
+                            <option v-for="doc in availableDoctors" :value="doc.email">{{ doc.name }}</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" v-model="bookForm.date" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Time</label>
+                        <input type="time" v-model="bookForm.time" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Reason for Visit</label>
+                        <textarea v-model="bookForm.reason" rows="3" placeholder="Brief description of symptoms..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-gold btn-full">Confirm Booking</button>
+                </form>
+                <p style="text-align: right; margin-top: 15px;">
+                    <a href="#" style="color:#aaa; font-size: 0.8rem; text-decoration: none;" @click="showBookModal = false">Cancel</a>
+                </p>
+            </div>
+        </div>
 
         <div v-if="showAuthModal" class="modal-overlay">
             <div class="modal-card animated-pop">
                 <h2>{{ authMode === 'signup' ? 'Create Account' : 'Welcome Back' }}</h2>
                 
-                <button @click="handleGoogleLogin" class="btn-google">
+                <button @click="handleGoogleLogin" class="btn-google" type="button">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
@@ -321,36 +482,21 @@
                 <div class="auth-divider"><span>OR</span></div>
 
                 <form @submit.prevent="handleAuthSubmit">
-                    <div class="input-group" v-if="authMode === 'signup'">
-                        <label>Full Name</label> 
-                        <input type="text" v-model="authForm.name" placeholder="John Doe" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Email Address</label> 
-                        <input type="email" v-model="authForm.email" placeholder="you@example.com" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Password</label> 
-                        <input type="password" v-model="authForm.password" placeholder="••••••••" required>
-                    </div>
+                    <div class="input-group" v-if="authMode === 'signup'"><label>Full Name</label><input type="text" v-model="authForm.name" placeholder="John Doe" required></div>
+                    <div class="input-group"><label>Email Address</label><input type="email" v-model="authForm.email" placeholder="you@example.com" required></div>
+                    <div class="input-group"><label>Password</label><input type="password" v-model="authForm.password" placeholder="••••••••" required></div>
                     
                     <div class="role-selector" v-if="authMode === 'signup'">
                         <div :class="['role-opt', authForm.role === 'patient' ? 'selected' : '']" @click="authForm.role = 'patient'">👤 Patient</div>
                         <div :class="['role-opt', authForm.role === 'doctor' ? 'selected' : '']" @click="authForm.role = 'doctor'">👨‍⚕️ Doctor</div>
+                        <div :class="['role-opt', authForm.role === 'ehr' ? 'selected' : '']" @click="authForm.role = 'ehr'">📁 EHR</div>
                     </div>
                     
-                    <button type="submit" class="btn btn-gold btn-full">
-                        {{ authMode === 'signup' ? 'Sign Up' : 'Log In' }}
-                    </button>
+                    <button type="submit" class="btn btn-gold btn-full">{{ authMode === 'signup' ? 'Sign Up' : 'Log In' }}</button>
                 </form>
                 
-                <p class="auth-switch">
-                    {{ authMode === 'signup' ? 'Already have an account?' : "Don't have an account?" }} 
-                    <a href="#" @click.prevent="toggleAuthMode">{{ authMode === 'signup' ? 'Log in' : 'Sign up' }}</a>
-                </p>
-                <p style="text-align: right; margin-top: 10px;">
-                    <a href="#" style="color:#aaa; font-size: 0.8rem; text-decoration: none;" @click="showAuthModal = false">Cancel</a>
-                </p>
+                <p class="auth-switch">{{ authMode === 'signup' ? 'Already have an account?' : "Don't have an account?" }} <a href="#" @click.prevent="toggleAuthMode">{{ authMode === 'signup' ? 'Log in' : 'Sign up' }}</a></p>
+                <p style="text-align: right; margin-top: 10px;"><a href="#" style="color:#aaa; font-size: 0.8rem; text-decoration: none;" @click="showAuthModal = false">Cancel</a></p>
             </div>
         </div>
     </div>
