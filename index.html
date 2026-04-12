@@ -226,6 +226,11 @@
                             <h4>Registered Patients</h4>
                             <div class="doctor-grid">
                                 <div v-for="pat in allPatients" :key="pat.email" class="doctor-card" style="min-height: auto;">
+                                    <div class="doc-avatar" style="width: 70px; height: 70px; background: #f4f7f6; color: #a0aec0; margin-bottom: 15px; border: 2px solid #e2ebe9;">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 40px; height: 40px;">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                    </div>
                                     <h4>{{ pat.name }}</h4>
                                     <p style="font-size: 0.8rem; color: #888; word-break: break-all;">{{ pat.email }}</p>
                                     <button @click="openPatientProfile(pat)" class="btn btn-primary-gold btn-sm" style="margin-top: 10px; width: 100%;">
@@ -238,6 +243,11 @@
                             <h4>Registered Doctors</h4>
                             <div class="doctor-grid">
                                 <div v-for="doc in allDoctors" :key="doc.email" class="doctor-card" style="min-height: auto;">
+                                    <div class="doc-avatar" style="width: 70px; height: 70px; background: #e3f2fd; color: #90caf9; margin-bottom: 15px; border: 2px solid #bbdefb;">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 40px; height: 40px;">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                    </div>
                                     <h4>{{ doc.name }}</h4>
                                     <p style="font-size: 0.8rem; color: #888; word-break: break-all;">{{ doc.email }}</p>
                                 </div>
